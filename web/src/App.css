@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.browser {
+  flex: 2;
+  border-right: 1px solid #ccc;
+}
+
+.chat {
+  display: flex;
+  flex: 1;
+  max-width: 500px;
+  flex-direction: column;
+}

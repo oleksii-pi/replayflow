@@ -1,0 +1,31 @@
+{
+  "name": "replayflow-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && dotenv -e .env.local node dist/index.js",
+    "test-ocr": "ts-node src/services/tests/extractTextAreasFromImage.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.33.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "openai": "^4.72.0",
+    "playwright": "^1.48.2",
+    "socket.io": "^4.8.1",
+    "tesseract.js": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/socket.io": "^3.0.1",
+    "dotenv-cli": "^7.4.3",
+    "typescript": "^5.6.3"
+  }
+}
