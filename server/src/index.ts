@@ -140,6 +140,13 @@ io.on("connection", (socket) => {
       return;
     }
 
+    // const functionCalls = [{
+    //   function: {
+    //     name: "analyzeScreenshotAndAct",
+    //     arguments: "{}",
+    //   },
+    // }];
+
     for (let i = 0; i < 1; i++) {
       // only one function call for now
       try {
@@ -150,7 +157,7 @@ io.on("connection", (socket) => {
         const contextBlockClose = "</details>";
         socket.emit(
           "server_response",
-          `An error occurred while executing function ${JSON.stringify(functionCalls[i], null, 2)}. ${contextBlockStart} \n + ${JSON.stringify(error, null, 2)} \n + ${contextBlockClose}`
+          `An error occurred while executing function ${JSON.stringify(functionCalls[i], null, 2)}. ${contextBlockStart} \n ${String(error)} \n ${contextBlockClose}`
         );
       }
 
@@ -244,5 +251,5 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   console.log(
     `Execution time for function "${func.name}": ${endTime - startTime}ms`
   );
-  return f.name + " function answers:\n\n" + result;
+  return f.name + ": completed\n\n" + result + "\n\n" + "Execution time: " + (endTime - startTime) + "ms";
 }

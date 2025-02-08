@@ -24,18 +24,13 @@ export const check: AIFunctionCall = {
   parameters: {
     type: "object",
     properties: {
-      userMessage: {
-        type: "string",
-        description:
-          "A description of what is needed to check in the screenshot.",
-      },
     },
-    required: ["userMessage"],
+    required: [],
   },
   execute: async (args: any, page: Page) => {
     try {
-      const { userMessage } = args;
-
+      const { _messages } = args;
+      const userMessage = _messages[_messages.length - 1];
       const screenshotBuffer = await page.screenshot();
       const imageBase64 = screenshotBuffer.toString("base64");
 
