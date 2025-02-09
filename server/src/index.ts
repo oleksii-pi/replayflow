@@ -131,7 +131,11 @@ io.on("connection", (socket) => {
 
     const messages = [systemMessageItem, ...messagesWithoutScriptRequests];
 
+    const startTime = Date.now();
     const functionCalls = await convertToFunctionCalls(messages);
+    const endTime = Date.now();
+    socket.emit("server_response", "// convertToFunctionCalls: " + (endTime - startTime) + "ms");
+
     if (functionCalls.length === 0) {
       socket.emit(
         "server_response",
@@ -251,5 +255,5 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   console.log(
     `Execution time for function "${func.name}": ${endTime - startTime}ms`
   );
-  return f.name + ": completed\n\n" + result + "\n\n" + "Execution time: " + (endTime - startTime) + "ms";
+  return "// Execution time " + func.name + ": " + (endTime - startTime) + "ms";
 }
