@@ -5,7 +5,8 @@ import { Page } from "playwright";
 
 export const comment: AIFunctionCall = {
   name: "comment",
-  description: "Use this tool when user mention comment, note, explanation, or anything that does not require any action.",
+  systemMessageExtension: "Use this tool when user mention explicitly words `comment` or `note`.",
+  description: "Use this tool when user mention explicitly words `comment` or `note`.",
   parameters: {
     type: "object",
     properties: {

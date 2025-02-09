@@ -5,6 +5,7 @@ import { resetBrowser as reset } from "../browser";
 
 export const resetBrowser: AIFunctionCall = {
   name: "resetBrowser",
+  systemMessageExtension: "Use this tool when user mention `reset browser`.",
   description:
     "Reset browser cookies, storage, and other data, but keep the same Page object alive",
   parameters: {
