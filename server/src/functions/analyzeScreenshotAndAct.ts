@@ -75,8 +75,8 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
     console.log("analyzeScreenshotAndAct: " + JSON.stringify(_messages, null, 2));
     const userTask = _messages[_messages.length - 1].content as string;
     
-    async function sendResponseMessage(msg: string) {
-      _socket.emit("server_response", "analyzeScreenshotAndAct: " + msg);
+    async function sendResponseMessage(msg: string, debug?: boolean) {
+      _socket.emit("server_response", (debug ? "// " : "") + "analyzeScreenshotAndAct: " + msg);
     }
     async function sendScreenshot() {
       const screenshot = (await page.screenshot()).toString("base64");
@@ -91,13 +91,13 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
       const startTime = Date.now();
       const aiResponse = await simpleClaudeApi(prompt, [screenshot], true);
       const endTime = Date.now();
-      await sendResponseMessage("Execution time for performReasoning: " + (endTime - startTime) + "ms");
+      await sendResponseMessage(`performReasoning: completed in ${endTime - startTime}ms`, true);
       
       let parsed: AIAssessment | null = null;
       try {
         parsed = JSON.parse(aiResponse) as AIAssessment;
       } catch {
-        await sendResponseMessage("AI returned invalid JSON: \n\n" + aiResponse);
+        await sendResponseMessage("AI returned invalid JSON: \n\n" + aiResponse, true);
         return null;
       }
       await sendResponseMessage(aiResponse);
@@ -199,6 +199,6 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
         completedActions++;
       }
     }
-    return "User task completed with " + completedActions + " actions.";
+    return "User task completed and performed " + completedActions + " actions.";
   },
 };

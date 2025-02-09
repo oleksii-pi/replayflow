@@ -129,7 +129,7 @@ io.on("connection", (socket) => {
     const startTime = Date.now();
     const functionCalls = await convertToFunctionCalls(messages);
     const endTime = Date.now();
-    socket.emit("server_response", "// convertToFunctionCalls: " + (endTime - startTime) + "ms");
+    socket.emit("server_response", "// convertToFunctionCalls: completed in " + (endTime - startTime) + "ms");
 
     if (functionCalls.length === 0) {
       socket.emit(
