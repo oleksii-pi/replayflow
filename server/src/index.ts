@@ -219,6 +219,7 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   const startTime = Date.now();
   const result = await func.execute(args, page());
   const endTime = Date.now();
+  socket.emit("function_completed");
 
   socket.emit("server_response", `// ${func.name}: completed in ${endTime - startTime}ms`);
 
