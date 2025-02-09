@@ -78,8 +78,8 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
     async function sendResponseMessage(msg: string) {
       _socket.emit("server_response", "analyzeScreenshotAndAct: " + msg);
     }
-    async function sendScreenshot(base64?: string) {
-      const screenshot = base64 || (await page.screenshot()).toString("base64");
+    async function sendScreenshot() {
+      const screenshot = (await page.screenshot()).toString("base64");
       _io.emit("browser_screenshot", screenshot);
       return screenshot;
     }
