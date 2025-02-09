@@ -25,6 +25,7 @@ const Chat: React.FC = () => {
 
   const messagesRef = useRef<Message[]>(messages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const activeCommandRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -84,11 +85,9 @@ const Chat: React.FC = () => {
     if (userCommand) {
       const commands = userCommand.split('\n').map(line => line.trim()).filter(line => line);
       if (commands.length > 1) {
-        // also add command to the chat but do not send it
-        const userMessage: Message = { role: 'user', content: userCommand };
-        setMessages(prev => [...prev, userMessage]);
+        
         const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-        localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
+        localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, { role: 'user', content: userCommand }]));
         
         setScriptCommands(commands);
         setScriptIndex(0);
@@ -231,6 +230,13 @@ const Chat: React.FC = () => {
     }
   }, [scriptCommands, scriptIndex, autoExecution]);
 
+  useEffect(() => {
+    if (activeCommandRef.current) {
+      // Scroll the active command into view within its container
+      activeCommandRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [scriptIndex]);
+
   return (
     <div className="chat">
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
@@ -310,6 +316,31 @@ const Chat: React.FC = () => {
           placeholder="Type your command or script..."
           ref={(textarea) => textarea && textarea.focus()}
         />
+        {scriptCommands.length > 0 && scriptIndex < scriptCommands.length && (
+          <div
+            className="markdown-rendered"
+            style={{
+              marginTop: '10px',
+              maxHeight: '30vh', // 30% of the page height
+              overflowY: 'auto',
+              backgroundColor: '#f8f8f8',
+              padding: '10px',
+              border: '1px solid #ccc'
+            }}
+          >
+            <ol style={{ margin: 0, paddingLeft: '20px' }}>
+              {scriptCommands.map((command, i) => (
+                <li 
+                  key={i} 
+                  ref={i === scriptIndex ? activeCommandRef : null}
+                  style={{ fontWeight: i === scriptIndex ? 'bold' : 'normal' }}
+                >
+                  {i === scriptIndex ? (input || command) : command}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
       </div>
     </div>
   );
