@@ -61,7 +61,7 @@ const Chat: React.FC = () => {
     ];
 
     setMessages(allActualMessages);
-    
+
     const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
     localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
 
@@ -113,8 +113,6 @@ const Chat: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    
-
     if (e.key === 'ArrowUp' && e.shiftKey) {
       const userMessages = getUniqueUserCommands();
       e.preventDefault();
