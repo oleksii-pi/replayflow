@@ -233,27 +233,25 @@ async function convertToFunctionCalls(messages: ChatCompletionMessageParam[]) {
 }
 
 async function executeCommand(functionCall: FunctionCall, messages: ChatCompletionMessageParam[], socket: Socket) {
-  const f = functionCall.function;
-  const args = JSON.parse(f.arguments);
-
-  const func = functions.find((func) => func.name === f.name);
+  const func = functions.find((func) => func.name === functionCall.function.name);
 
   if (!func) {
-    return "I'm sorry, I can't perform that action.";
+    return `${functionCall.function.name} is not supported.`;
   }
 
-  const startTime = Date.now();
-
+  const args = JSON.parse(functionCall.function.arguments);
   args._scriptContext = _scriptContext;
   args._socket = socket;
   args._io = io;
   args._messages = messages;
 
-  const result = await func.execute(args, page());
+  socket.emit("server_response", `// ${func.name}: started`);
 
+  const startTime = Date.now();
+  const result = await func.execute(args, page());
   const endTime = Date.now();
-  console.log(
-    `Execution time for function "${func.name}": ${endTime - startTime}ms`
-  );
-  return "// Execution time " + func.name + ": " + (endTime - startTime) + "ms";
+
+  socket.emit("server_response", `// ${func.name}: completed in ${endTime - startTime}ms`);
+
+  return `${func.name} exection result:\n\n${result}`;
 }
