@@ -122,7 +122,12 @@ const Chat: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       setHistoryIndex(null);
-      sendMessage();
+      if (scriptCommands.length > 0 && scriptIndex < scriptCommands.length) {
+        if (autoExecution) return;
+        handleNextStep();
+      } else {
+        sendMessage();
+      }
     }
   };
 
@@ -165,14 +170,34 @@ const Chat: React.FC = () => {
   const handleNextStep = () => {
     if (loading) return;
     if (scriptIndex < scriptCommands.length) {
-      const nextCommand = scriptCommands[scriptIndex];
-      sendUserCommand(nextCommand);
+      let commandToSend: string;
+      if (!autoExecution) {
+        setScriptCommands(prev => {
+          const newCommands = [...prev];
+          newCommands[scriptIndex] = input;
+          return newCommands;
+        });
+        commandToSend = input;
+      } else {
+        commandToSend = scriptCommands[scriptIndex];
+      }
+      sendUserCommand(commandToSend);
       setScriptIndex(prev => prev + 1);
     }
   };
 
   const toggleAutoMode = () => {
-    setAutoExecution(prev => !prev);
+    setAutoExecution(prev => {
+      if (!prev) {
+        setInput('');
+        return true;
+      } else {
+        if (scriptIndex < scriptCommands.length) {
+          setInput(scriptCommands[scriptIndex]);
+        }
+        return false;
+      }
+    });
   };
 
   const handleAbort = () => {
@@ -226,8 +251,7 @@ const Chat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       <div style={{ padding: '10px' }}>
-        {/* Render script control buttons above the input */}
-        {scriptCommands.length > 0 && (
+        {scriptCommands.length > 0 && scriptIndex < scriptCommands.length && (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <button
               onClick={handleNextStep}
