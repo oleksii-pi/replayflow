@@ -101,6 +101,22 @@ const Chat: React.FC = () => {
     }
   };
 
+  const getUniqueUserCommands = useCallback((): Message[] => {
+    const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    const uniqueCommands = new Map();
+    return history
+      .filter((msg: Message) => msg.role === 'user')
+      .reverse() // Reverse to process from newest to oldest
+      .filter((msg: Message) => {
+        if (!uniqueCommands.has(msg.content)) {
+          uniqueCommands.set(msg.content, true);
+          return true;
+        }
+        return false;
+      })
+      .reverse(); 
+  }, []);
+
   // Send on Enter (unless Shift+Enter is pressed)
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -111,50 +127,36 @@ const Chat: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    // Create a map to store the last instance of each unique command
-    const uniqueCommands = new Map();
-    const userMessages = history
-      .filter((msg: Message) => msg.role === 'user')
-      .reverse() // Reverse to process from newest to oldest
-      .filter((msg: Message) => {
-        if (!uniqueCommands.has(msg.content)) {
-          uniqueCommands.set(msg.content, true);
-          return true;
-        }
-        return false;
-      })
-      .reverse(); // Reverse back to maintain chronological order
+    
 
-    if (e.key === 'ArrowUp') {
+    if (e.key === 'ArrowUp' && e.shiftKey) {
+      const userMessages = getUniqueUserCommands();
       e.preventDefault();
       
-      // If we haven't started navigating history yet, save current input
       if (historyIndex === null) {
         setTempInput(input);
-        // Start from the most recent message
         const newIndex = userMessages.length - 1;
         if (newIndex >= 0) {
           setHistoryIndex(newIndex);
           setInput(userMessages[newIndex].content);
         }
       } else if (historyIndex > 0) {
-        // Move backwards through history
         const newIndex = historyIndex - 1;
         setHistoryIndex(newIndex);
         setInput(userMessages[newIndex].content);
       }
-    } else if (e.key === 'ArrowDown') {
+    } 
+    
+    if (e.key === 'ArrowDown' && e.shiftKey) {
+      const userMessages = getUniqueUserCommands();
       e.preventDefault();
       
       if (historyIndex !== null) {
         if (historyIndex < userMessages.length - 1) {
-          // Move forwards through history
           const newIndex = historyIndex + 1;
           setHistoryIndex(newIndex);
           setInput(userMessages[newIndex].content);
         } else {
-          // Restore the original input when we reach the end
           setHistoryIndex(null);
           setInput(tempInput);
         }
