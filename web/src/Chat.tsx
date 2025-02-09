@@ -51,34 +51,20 @@ const Chat: React.FC = () => {
     };
   }, []);
 
-  const sendSingleCommand = useCallback((command: string) => {
+  const sendUserCommand = useCallback((command: string) => {
     const userMessage: Message = { role: 'user', content: command };
+    console.log('[user_message]', command);
+
     const allActualMessages: Message[] = [
       ...messagesRef.current,
       userMessage,
     ];
 
-    if (command.startsWith("{{")) {
-      const maskedCommand = command.split("=")[0] + "=";
-      const maskedMessage: Message = { role: 'user', content: maskedCommand };
-      const allMessagesWithoutScriptInputVariables: Message[] = [
-        ...messagesRef.current,
-        maskedMessage,
-      ];
-      setMessages(allMessagesWithoutScriptInputVariables);
-      console.log('[user_message]', maskedCommand);
-      
-      // Store the actual (unmasked) message in history
-      const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-      localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
-    } else {
-      setMessages(allActualMessages);
-      console.log('[user_message]', command);
-      
-      // Store the message in history
-      const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-      localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
-    }
+    setMessages(allActualMessages);
+    
+    const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
+
     socket.emit('user_message', JSON.stringify(allActualMessages));
     
     setLoading(true);
@@ -95,7 +81,7 @@ const Chat: React.FC = () => {
 
     const userCommand = input.trim();
     if (userCommand) {
-      sendSingleCommand(userCommand);
+      sendUserCommand(userCommand);
       setInput('');
       setLoading(true);
     }
@@ -146,7 +132,7 @@ const Chat: React.FC = () => {
         setInput(userMessages[newIndex].content);
       }
     } 
-    
+
     if (e.key === 'ArrowDown' && e.shiftKey) {
       const userMessages = getUniqueUserCommands();
       e.preventDefault();
