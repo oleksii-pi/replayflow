@@ -1,4 +1,5 @@
 /// src/functions/comment.ts
+import { ChatCompletionMessageParam } from "openai/resources";
 import { AIFunctionCall } from "../domain/AICommandFunction";
 import { Page } from "playwright";
 
@@ -10,7 +11,11 @@ export const comment: AIFunctionCall = {
     properties: {
     }
   },
-  execute: async (_args: any, _page: Page) => {
-    return "Comment stored.";
+  execute: async (args: any, _page: Page) => {
+    const { _messages } = args as {
+      _messages: ChatCompletionMessageParam[];
+    };
+    const comment = _messages[_messages.length - 1].content as string;
+    return "Comment stored: " + comment;
   },
 };
