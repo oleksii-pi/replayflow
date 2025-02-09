@@ -16,6 +16,9 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState('');
+  const [scriptCommands, setScriptCommands] = useState<string[]>([]);
+  const [scriptIndex, setScriptIndex] = useState(0);
+  const [autoExecution, setAutoExecution] = useState(false);
 
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
   const [tempInput, setTempInput] = useState<string>('');
@@ -81,9 +84,20 @@ const Chat: React.FC = () => {
 
     const userCommand = input.trim();
     if (userCommand) {
-      sendUserCommand(userCommand);
-      setInput('');
-      setLoading(true);
+      const commands = userCommand.split('\n').map(line => line.trim()).filter(line => line);
+      if (commands.length > 1) {
+        // also add command to the chat but do not send it
+        const userMessage: Message = { role: 'user', content: "Script execution started.\n```\n" + userCommand + "\n```" };
+        setMessages(prev => [...prev, userMessage]);
+
+        setScriptCommands(commands);
+        setScriptIndex(0);
+        setInput(''); 
+      } else {
+        sendUserCommand(userCommand);
+        setInput('');
+        // Note: sendUserCommand already calls setLoading(true)
+      }
     }
   };
 
@@ -148,6 +162,50 @@ const Chat: React.FC = () => {
     }
   };
 
+  const handleNextStep = () => {
+    if (loading) return;
+    if (scriptIndex < scriptCommands.length) {
+      const nextCommand = scriptCommands[scriptIndex];
+      sendUserCommand(nextCommand);
+      setScriptIndex(prev => prev + 1);
+    }
+  };
+
+  const toggleAutoMode = () => {
+    setAutoExecution(prev => !prev);
+  };
+
+  const handleAbort = () => {
+    setScriptCommands([]);
+    setScriptIndex(0);
+    setAutoExecution(false);
+    setInput('');
+  };
+
+  useEffect(() => {
+    if (!loading && autoExecution && scriptCommands.length > 0) {
+      if (scriptIndex < scriptCommands.length) {
+        const nextCommand = scriptCommands[scriptIndex];
+        sendUserCommand(nextCommand);
+        setScriptIndex(prev => prev + 1);
+      } else {
+        setScriptCommands([]);
+        setScriptIndex(0);
+        setAutoExecution(false);
+      }
+    }
+  }, [loading, autoExecution, scriptCommands, scriptIndex, sendUserCommand]);
+
+  useEffect(() => {
+    if (!autoExecution && scriptCommands.length > 0) {
+      if (scriptIndex < scriptCommands.length) {
+        setInput(scriptCommands[scriptIndex]);
+      } else {
+        setInput('');
+      }
+    }
+  }, [scriptCommands, scriptIndex, autoExecution]);
+
   return (
     <div className="chat">
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
@@ -168,7 +226,51 @@ const Chat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       <div style={{ padding: '10px' }}>
-        
+        {/* Render script control buttons above the input */}
+        {scriptCommands.length > 0 && (
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+            <button
+              onClick={handleNextStep}
+              disabled={loading || autoExecution}
+              style={{
+                padding: '5px 10px',
+                backgroundColor: loading || autoExecution ? '#93c7a4' : '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: loading || autoExecution ? 'default' : 'pointer'
+              }}
+            >
+              Next
+            </button>
+            <button
+              onClick={toggleAutoMode}
+              style={{
+                padding: '5px 10px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              {autoExecution ? 'Stop' : 'Auto'}
+            </button>
+            <button 
+              onClick={handleAbort}
+              style={{
+                padding: '5px 10px',
+                backgroundColor: '#ff4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Stop
+            </button>
+          </div>
+        )}
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
