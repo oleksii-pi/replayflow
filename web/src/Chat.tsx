@@ -17,16 +17,8 @@ const Chat: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState('');
 
-  const [commands, setCommands] = useState<string[]>([]);
-  const [commandIndex, setCommandIndex] = useState<number>(0);
-  const [executingScript, setExecutingScript] = useState<boolean>(false);
-
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
   const [tempInput, setTempInput] = useState<string>('');
-
-  const [isAutoMode, setIsAutoMode] = useState(false);
-
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
   const messagesRef = useRef<Message[]>(messages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -38,25 +30,26 @@ const Chat: React.FC = () => {
   useEffect(() => {
     socket.on('server_response', (message: string) => {
       console.log('[server_response]', message);
-      setLoading(false);
-      setIsWaitingForResponse(false);
-
       const newMessage: Message = { role: 'assistant', content: message };
-      // Store the assistant message in history before updating state
       const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
       localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, newMessage]));
-      
       setMessages(prev => [...prev, newMessage]);
-
-      if (executingScript) {
-        setCommandIndex((prevIndex) => prevIndex + 1);
-      }
     });
 
     return () => {
       socket.off('server_response');
     };
-  }, [executingScript]);
+  }, []);
+
+  useEffect(() => {
+    socket.on('function_completed', () => {
+      setLoading(false);
+    });
+
+    return () => {
+      socket.off('function_completed');
+    };
+  }, []);
 
   const sendSingleCommand = useCallback((command: string) => {
     const userMessage: Message = { role: 'user', content: command };
@@ -91,42 +84,6 @@ const Chat: React.FC = () => {
     setLoading(true);
   }, []);
 
-  const addUserScriptMessage = useCallback((command: string) => {
-    const scriptMessage: Message = { 
-      role: 'user', 
-      content: "script execution:\n\n```\n" + command + "\n```" 
-    };
-    const allActualMessages: Message[] = [
-      ...messagesRef.current,
-      scriptMessage,
-    ];
-    setMessages(allActualMessages);
-    
-    // Store the script message in history
-    const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, scriptMessage]));
-    
-    console.log('[user_script]', command);
-  }, []);
-
-  useEffect(() => {
-    if (executingScript && commandIndex < commands.length && !loading) {
-      console.log('Executing command:', commandIndex);
-      const currentCommand = commands[commandIndex];
-      if (currentCommand.includes('goto ')) {
-        const gotoStep = currentCommand.split('goto ')[1];
-        const gotoCommandIndex = commands.findIndex((command) => command.startsWith(`${gotoStep}.`));
-        if (gotoCommandIndex !== -1) {
-          setCommandIndex(gotoCommandIndex);
-        }
-        return;
-      }
-      sendSingleCommand(currentCommand);
-    } else if (executingScript && commandIndex >= commands.length) {
-      setExecutingScript(false);
-    }
-  }, [commandIndex, commands, executingScript, loading, sendSingleCommand]);
-
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -138,20 +95,9 @@ const Chat: React.FC = () => {
 
     const userCommand = input.trim();
     if (userCommand) {
-      const lines = userCommand.split('\n');
-      const containsScript = lines.length > 1;
-
-      if (containsScript) {
-        setCommands(lines);
-        setCommandIndex(0);
-        setExecutingScript(true);
-        addUserScriptMessage(input);
-        setInput('');
-      } else {
-        sendSingleCommand(userCommand);
-        setInput('');
-        setLoading(true);
-      }
+      sendSingleCommand(userCommand);
+      setInput('');
+      setLoading(true);
     }
   };
 
@@ -162,19 +108,6 @@ const Chat: React.FC = () => {
       setHistoryIndex(null);
       sendMessage();
     }
-  };
-
-  const stopScript = () => {
-    setExecutingScript(false);
-    setCommandIndex(0);
-    setLoading(false);
-  };
-
-  const abortMission = () => {
-    socket.emit('abort_execution');
-    setExecutingScript(false);
-    setCommandIndex(0);
-    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -229,17 +162,6 @@ const Chat: React.FC = () => {
     }
   };
 
-  const handleNextStep = () => {
-    setIsWaitingForResponse(true);
-    socket.emit('next_step');
-  };
-
-  const toggleAutoMode = () => {
-    const newMode = !isAutoMode;
-    setIsAutoMode(newMode);
-    socket.emit(newMode ? 'switch_to_auto' : 'switch_to_step_by_step');
-  };
-
   return (
     <div className="chat">
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
@@ -260,66 +182,7 @@ const Chat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       <div style={{ padding: '10px' }}>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          {executingScript && (
-            <button 
-              onClick={stopScript}
-              style={{
-                padding: '5px 10px',
-                backgroundColor: '#ff4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Stop Script
-            </button>
-          )}
-          {!isAutoMode && (
-            <button
-              onClick={handleNextStep}
-              disabled={isWaitingForResponse}
-              style={{
-                padding: '5px 10px',
-                backgroundColor: isWaitingForResponse ? '#93c7a4' : '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isWaitingForResponse ? 'default' : 'pointer'
-              }}
-            >
-              Next step
-            </button>
-          )}
-          <button
-            onClick={toggleAutoMode}
-            style={{
-              padding: '5px 10px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {isAutoMode ? 'Switch to Step by step' : 'Switch to Auto'}
-          </button>
-          
-          <button 
-            onClick={abortMission}
-            style={{
-              padding: '5px 10px',
-              backgroundColor: '#ff8c00',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Abort Mission
-          </button>
-        </div>
+        
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
