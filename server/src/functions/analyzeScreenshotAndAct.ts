@@ -8,13 +8,14 @@ import { Server } from "http";
 import { ChatCompletionMessageParam } from "openai/resources";
 
 const analyzeImagePrompt = `
+Explain what you see in the screenshot and how it relates to the user task.
+Provide a plan of actions to perform the user task.
+User can ask generic question, that does not require any action, so actions will be empty.
 Find the bounding box coordinates of one or more UI elements in the screenshot.
 Look all possible UI elements, including text, images, buttons, links, menus, icons, etc.
-Explain what you see in the screenshot and how it relates to the user task.
-Provide a plan of actions to perform the user task. User can ask generic question, that does not require any action.
 Return a JSON with this structure:
 {
-  "reasoning": "What you can see on the screenshot, how it relates to the user task and what you can do to perform user task",
+  "reasoning": "What you can see on the screenshot, how it relates to the user task and what you can do to perform user task if action required",
   "uiElements": [{ "text": string | null, "description": string, "x1": number, "y1": number, "x2": number, "y2": number }],
   "actions": [
     {
@@ -99,7 +100,7 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
         await sendResponseMessage("AI returned invalid JSON: \n\n" + aiResponse);
         return null;
       }
-      await sendResponseMessage(JSON.stringify(aiResponse, null, 2));
+      await sendResponseMessage(aiResponse);
       
       await page.evaluate((data: UIElement[]) => {
         data.forEach((d, index) => {
