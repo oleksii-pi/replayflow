@@ -14,7 +14,7 @@ import { page } from "./browser";
 
 dotenv.config();
 
-const systemMessageBase = "Select the tool that is most relevant to the user's request.";
+const systemMessageBase = "Act as coordinator and decide which tool to use based on the user's request.";
 
 const functionsSystemMessageExtension = functions
   .filter((f) => f.systemMessageExtension)
@@ -189,11 +189,11 @@ async function convertToFunctionCalls(messages: ChatCompletionMessageParam[]) {
     tool_choice: "required",
   };
   
-  // console.log("messageConfig:");
-  // console.log(
-  //   "\x1b[32m%s\x1b[0m", // Green color
-  //   JSON.stringify(messageConfig, null, 2)
-  // );
+  console.log("messageConfig:");
+  console.log(
+    "\x1b[32m%s\x1b[0m", // Green color
+    JSON.stringify(messageConfig, null, 2)
+  );
 
   const response = await openAIapi.chat.completions.create(messageConfig);
 

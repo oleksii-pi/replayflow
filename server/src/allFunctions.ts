@@ -9,10 +9,9 @@ import { analyzeScreenshotAndAct } from "./functions/analyzeScreenshotAndAct";
 
 export const functions: AIFunctionCall[] = [
   visitUrl,
-  //// call them only when specific keyword is used:
-  comment,
-  //check,
+  //check, // call them only when specific keyword is used:
   analyzeScreenshotAndAct,
   setOutputParameter,
   resetBrowser,
+  comment,
 ];
