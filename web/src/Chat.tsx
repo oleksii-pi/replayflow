@@ -239,6 +239,8 @@ const Chat: React.FC = () => {
     }
   }, [scriptIndex]);
 
+  const displayScriptAndButtons = scriptCommands.length > 0 && scriptIndex < scriptCommands.length;
+
   return (
     <div className="chat">
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
@@ -259,7 +261,7 @@ const Chat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       <div style={{ padding: '10px' }}>
-        {scriptCommands.length > 0 && scriptIndex < scriptCommands.length && (
+        {displayScriptAndButtons && (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <button
               onClick={handleNextStep}
@@ -318,7 +320,7 @@ const Chat: React.FC = () => {
           placeholder="Type your command or script..."
           ref={(textarea) => textarea && textarea.focus()}
         />
-        {scriptCommands.length > 0 && scriptIndex < scriptCommands.length && (
+        {displayScriptAndButtons && (
           <div
             className="markdown-rendered"
             style={{
@@ -330,17 +332,17 @@ const Chat: React.FC = () => {
               border: '1px solid #ccc'
             }}
           >
-            <ol style={{ margin: 0, paddingLeft: '20px' }}>
+            <ul style={{ margin: 0, paddingLeft: '20px' }}>
               {scriptCommands.map((command, i) => (
                 <li 
                   key={i} 
                   ref={i === scriptIndex ? activeCommandRef : null}
-                  style={{ fontWeight: i === scriptIndex ? 'bold' : 'normal' }}
+                  style={{ fontWeight: i === scriptIndex - 1 ? 'bold' : 'normal' }}
                 >
                   {i === scriptIndex ? (input || command) : command}
                 </li>
               ))}
-            </ol>
+            </ul>
           </div>
         )}
       </div>
