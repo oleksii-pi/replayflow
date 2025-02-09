@@ -183,6 +183,9 @@ const Chat: React.FC = () => {
         commandToSend = scriptCommands[scriptIndex];
       }
       sendUserCommand(commandToSend);
+      if (!autoExecution) {
+        setInput('');
+      }
       setScriptIndex(prev => prev + 1);
     }
   };
@@ -223,14 +226,15 @@ const Chat: React.FC = () => {
   }, [loading, autoExecution, scriptCommands, scriptIndex, sendUserCommand]);
 
   useEffect(() => {
-    if (!autoExecution && scriptCommands.length > 0) {
+    // Only update the input with the next command after the current function_completed event (loading becomes false)
+    if (!loading && !autoExecution && scriptCommands.length > 0) {
       if (scriptIndex < scriptCommands.length) {
         setInput(scriptCommands[scriptIndex]);
       } else {
         setInput('');
       }
     }
-  }, [scriptCommands, scriptIndex, autoExecution]);
+  }, [loading, scriptCommands, scriptIndex, autoExecution]);
 
   useEffect(() => {
     if (activeCommandRef.current) {
