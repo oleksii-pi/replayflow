@@ -47,7 +47,7 @@ export const simpleClaudeApi = async (
   try {
     const messageConfig: MessageCreateParamsNonStreaming = {
       model: "claude-3-5-sonnet-20241022",
-      max_tokens: 4096,
+      max_tokens: 1024 * 8,
       system: answerJson ? "Answer as a valid JSON string. Do not include any additional text or explanation." : undefined,
       messages: [
         {
