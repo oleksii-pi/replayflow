@@ -85,7 +85,7 @@ const Chat: React.FC = () => {
       const commands = userCommand.split('\n').map(line => line.trim()).filter(line => line);
       if (commands.length > 1) {
         // also add command to the chat but do not send it
-        const userMessage: Message = { role: 'user', content: "Script execution started.\n```\n" + userCommand + "\n```" };
+        const userMessage: Message = { role: 'user', content: userCommand };
         setMessages(prev => [...prev, userMessage]);
         const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
         localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
@@ -267,7 +267,7 @@ const Chat: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              Stop
+              Abort script
             </button>
           </div>
         )}
