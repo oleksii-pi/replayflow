@@ -85,6 +85,8 @@ const Chat: React.FC = () => {
     if (userCommand) {
       const commands = userCommand.split('\n').map(line => line.trim()).filter(line => line);
       if (commands.length > 1) {
+        const userMessage: Message = { role: 'user', content: "Script execution started:\n\n" + userCommand };
+        setMessages(prev => [...prev, userMessage]);
         
         const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
         localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, { role: 'user', content: userCommand }]));
