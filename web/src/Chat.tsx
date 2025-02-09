@@ -34,8 +34,6 @@ const Chat: React.FC = () => {
     socket.on('server_response', (message: string) => {
       console.log('[server_response]', message);
       const newMessage: Message = { role: 'assistant', content: message };
-      const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-      localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, newMessage]));
       setMessages(prev => [...prev, newMessage]);
     });
 
@@ -89,7 +87,9 @@ const Chat: React.FC = () => {
         // also add command to the chat but do not send it
         const userMessage: Message = { role: 'user', content: "Script execution started.\n```\n" + userCommand + "\n```" };
         setMessages(prev => [...prev, userMessage]);
-
+        const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+        localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
+        
         setScriptCommands(commands);
         setScriptIndex(0);
         setInput(''); 
