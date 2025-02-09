@@ -142,8 +142,7 @@ io.on("connection", (socket) => {
     for (let i = 0; i < 1; i++) {
       // only one function call for now
       try {
-        const result = await executeCommand(functionCalls[i] as FunctionCall, messages, socket);
-        socket.emit("server_response", result);
+        await executeCommand(functionCalls[i] as FunctionCall, messages, socket);
       } catch (error: any) {
         const contextBlockStart = "<details><summary>Context</summary>\n\n";
         const contextBlockClose = "</details>";
@@ -214,14 +213,12 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   args._io = io;
   args._messages = messages;
 
-  socket.emit("server_response", `// ${func.name}: started`);
+  socket.emit("server_response", `// execute: ${func.name}`);
 
   const startTime = Date.now();
   const result = await func.execute(args, page());
   const endTime = Date.now();
-  socket.emit("function_completed");
-
   socket.emit("server_response", `// ${func.name}: completed in ${endTime - startTime}ms`);
-
-  return `${func.name} exection result:\n\n${result}`;
+  socket.emit("server_response", `${func.name} exection result:\n\n${result}`);
+  socket.emit("function_completed");
 }
