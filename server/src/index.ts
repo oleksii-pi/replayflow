@@ -55,17 +55,12 @@ io.on("connection", (socket) => {
   console.log("A user connected, socket id:" + socket.id);
 
   const sendScreenshot = async () => {
-    try {
-      const screenshotBuffer = await page().screenshot();
-      const screenshot = screenshotBuffer.toString("base64");
-      io.emit("browser_screenshot", screenshot);
-    } catch (error) {
-      console.log("Error while taking screenshot: ", error);
-    }
+    const screenshot = (await page().screenshot()).toString("base64");
+    io.emit("browser_screenshot", screenshot);
   };
 
   socket.on("user_message", async (allMessages: string) => {
-    console.log("\n\n\n\n");
+    console.log("======================================");
     const systemMessageItem: ChatCompletionMessageParam = {
       role: "system",
       content: systemMessage,
@@ -144,13 +139,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // const functionCalls = [{
-    //   function: {
-    //     name: "analyzeScreenshotAndAct",
-    //     arguments: "{}",
-    //   },
-    // }];
-
     for (let i = 0; i < 1; i++) {
       // only one function call for now
       try {
@@ -184,7 +172,7 @@ async function convertToFunctionCalls(messages: ChatCompletionMessageParam[]) {
     parameters: func.parameters,
   }));
 
-  const startTime = Date.now();
+  
   const messageConfig: ChatCompletionCreateParamsNonStreaming = {
     model: "gpt-4o-mini",
     messages,
@@ -202,32 +190,13 @@ async function convertToFunctionCalls(messages: ChatCompletionMessageParam[]) {
   // );
 
   const response = await openAIapi.chat.completions.create(messageConfig);
-  const endTime = Date.now();
-  console.log(
-    `Execution time for convertToFunctionCalls: ${endTime - startTime}ms`
-  );
 
   const functionCalls = response.choices[0].message.tool_calls as FunctionCall[];
-  if (functionCalls[0].function.name === "findUIElements") {
-    // hack: patch the argument to include the original user message
-    // because the function is called multiple times in this scenario:
-    // "you see a question and a few possible answers, find corresponding bullet for correct answer and click it. find next button and click it."
-    functionCalls[0].function.arguments = JSON.stringify({"userMessage": messages[messages.length - 1].content as string});
-  }
-
-  if (functionCalls[0].function.name === "discoverMission") {
-    // hack: patch the argument to include the original user message
-    functionCalls[0].function.arguments = JSON.stringify({"mission": messages[messages.length - 1].content as string});
-  }
 
   console.log(
     "Function calls: " + "\x1b[33m%s\x1b[0m", // Yellow color
     functionCalls?.map((f) => f.function.name + " " + f.function.arguments)
   );
-
-  if (!functionCalls || functionCalls.length === 0) {
-    return [];
-  }
 
   return functionCalls;
 }
