@@ -14,7 +14,7 @@ import { page } from "./browser";
 
 dotenv.config();
 
-const systemMessageBase = "";
+const systemMessageBase = "Select the tool that is most relevant to the user's request.";
 
 const functionsSystemMessageExtension = functions
   .filter((f) => f.systemMessageExtension)
@@ -110,6 +110,7 @@ io.on("connection", (socket) => {
         contextBlockClose;
 
       socket.emit("server_response", answer);
+      socket.emit("function_completed");
       return;
     }
 
@@ -121,10 +122,16 @@ io.on("connection", (socket) => {
       console.log("Script context updated: ", _scriptContext);
       const answer = `setInputParameter function answers: {{${variableName}}} is linked to the script context.`;
       socket.emit("server_response", answer);
+      socket.emit("function_completed");
       return;
     }
 
     const messages = [systemMessageItem, ...messagesWithoutScriptRequests];
+    console.log("messages:");
+    console.log(
+      "\x1b[32m%s\x1b[0m", // Green color
+      JSON.stringify(messages, null, 2)
+    );
 
     const startTime = Date.now();
     const functionCalls = await convertToFunctionCalls(messages);
