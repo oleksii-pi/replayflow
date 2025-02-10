@@ -243,6 +243,22 @@ const Chat: React.FC = () => {
     }
   }, [scriptIndex]);
 
+  useEffect(() => {
+    socket.on('goto', (label: string) => {
+      console.log('[goto]', label);
+      if (scriptCommands.length > 0) {
+        const newIndex = scriptCommands.findIndex(cmd => cmd.startsWith(`${label}.`));
+        if (newIndex !== -1) {
+          setScriptIndex(newIndex);
+        }
+      }
+    });
+
+    return () => {
+      socket.off('goto');
+    };
+  }, [scriptCommands]);
+
   const displayScriptAndButtons = scriptCommands.length > 0 && scriptIndex < scriptCommands.length;
 
   return (

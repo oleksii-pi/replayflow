@@ -25,7 +25,9 @@ Return a JSON with this structure:
         "mouseClick": { "x": number, "y": number } | null,
         "mouseScroll": { "x": number, "y": number } | null,
         "keyPress": { "key": string } | null,
-        "typeText": { "text": string } | null
+        "typeText": { "text": string } | null,
+        "wait": { "ms": number } | null,
+        "goto": { "label": string } | null;
       }
     }
   ]
@@ -49,6 +51,8 @@ interface Interaction {
   mouseScroll?: { x: number; y: number };
   keyPress?: { key: string };
   typeText?: { text: string };
+  wait?: { ms: number };
+  goto?: { label: string };
 }
 
 interface Action {
@@ -136,6 +140,8 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
       
       return parsed;
     }
+    
+    let abortIneractionLoop = false;
 
     async function performInteraction(interaction: Interaction): Promise<boolean> {
       const oldUrl = page.url();
@@ -176,6 +182,20 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
         await sendResponseMessage("Typed text: " + interaction.typeText.text);
         actionDone = true;
       }
+      if (interaction.wait) {
+        const waitMs = interaction.wait.ms || +interaction.wait;
+        await page.waitForTimeout(waitMs);
+        await sendScreenshot();
+        await sendResponseMessage("Waited for " + waitMs + "ms");
+        actionDone = true;
+      }
+      if (interaction.goto) {
+        const gotoLabel = interaction.goto.label || interaction.goto;
+        await sendResponseMessage("Goto label: " + gotoLabel);
+        _socket.emit("goto", gotoLabel);
+        abortIneractionLoop = true;
+        return true;
+      }
       if (!actionDone) {
         await sendResponseMessage("Warning: no action performed: \n\n" + JSON.stringify(interaction, null, 2));
       }
@@ -197,6 +217,9 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
     for (const action of plan.actions) {
       if (await performInteraction(action.interaction)) {
         completedActions++;
+        if (abortIneractionLoop) {
+          break;
+        }
       }
     }
     return "User task completed and performed " + completedActions + " actions.";
