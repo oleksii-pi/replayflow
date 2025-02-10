@@ -180,7 +180,7 @@ async function convertToFunctionCalls(messages: ChatCompletionMessageParam[]) {
 
   
   const messageConfig: ChatCompletionCreateParamsNonStreaming = {
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages,
     tools: openAIFunctions.map((func) => ({
       function: func,

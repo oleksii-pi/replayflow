@@ -8,10 +8,10 @@ import { resetBrowser } from "./functions/resetBrowser";
 import { analyzeScreenshotAndAct } from "./functions/analyzeScreenshotAndAct";
 
 export const functions: AIFunctionCall[] = [
-  visitUrl,
-  //check, // call them only when specific keyword is used:
+  // call them only when specific keyword is used:
   analyzeScreenshotAndAct,
+  visitUrl,
+  comment,
   setOutputParameter,
   resetBrowser,
-  comment,
 ];
