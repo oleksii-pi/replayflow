@@ -238,7 +238,6 @@ const Chat: React.FC = () => {
 
   useEffect(() => {
     if (activeCommandRef.current) {
-      // Scroll the active command into view within its container
       activeCommandRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [scriptIndex]);
