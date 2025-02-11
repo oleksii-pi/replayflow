@@ -32,8 +32,11 @@ Return a JSON with this structure:
     }
   ]
 }
+
 User task: 
+\`\`\`
 {{userTask}}
+\`\`\`
 `;
 
 interface UIElement {
