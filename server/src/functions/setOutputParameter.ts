@@ -1,6 +1,13 @@
 /// src/functions/setOutputParameter.ts
 import { AIFunctionCall } from "../domain/AICommandFunction";
 import { Page } from "playwright";
+import { IScriptContext } from "../domain/IScriptContext";
+
+interface IFunctionParams {
+  outParameterName: string;
+  outParameterValue: string;
+  _scriptContext: IScriptContext;
+}
 
 export const setOutputParameter: AIFunctionCall = {
   name: "setOutputParameter",
@@ -22,8 +29,8 @@ export const setOutputParameter: AIFunctionCall = {
     required: ["outParameterName", "outParameterValue"],
   },
   execute: async (args: any, _page: Page) => {
-    const { outParameterName, outParameterValue, _scriptContext } = args;
-    _scriptContext.out[outParameterName] = outParameterValue;
+    const { outParameterName, outParameterValue, _scriptContext} = args as IFunctionParams;
+    _scriptContext.out.set(outParameterName, outParameterValue);
     console.log("Script context updated: ", _scriptContext);
     return `Set output parameter: {{${outParameterName}}}=${outParameterValue}`;
   },

@@ -11,6 +11,7 @@ import { ChatCompletionMessageParam } from "openai/resources";
 import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/chat/completions";
 import { extractScript, Script } from "./functions/extractScript";
 import { page } from "./browser";
+import { IScriptContext } from "./domain/IScriptContext";
 
 dotenv.config();
 
@@ -49,7 +50,7 @@ server.listen(5000, () => {
   console.log("Server listening on port 5000");
 });
 
-const _scriptContext = { in: {}, out: {} } as any;
+const _scriptContext = { in: new Map<string, string>(), out: new Map<string, string>() } as IScriptContext;
 
 io.on("connection", (socket) => {
   console.log("A user connected, socket id:" + socket.id);
@@ -119,7 +120,7 @@ io.on("connection", (socket) => {
       // setInputParameter function
       const variableName = lastUserMessage.split("{{")[1].split("}}")[0];
       const variableValue = lastUserMessage.split("=")[1].trim();
-      _scriptContext.in[variableName] = variableValue;
+      _scriptContext.in.set(variableName, variableValue);
       console.log("Script context updated: ", _scriptContext);
       const answer = `setInputParameter function answers: {{${variableName}}} is linked to the script context.`;
       socket.emit("server_response", answer);
@@ -219,7 +220,7 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   args._scriptContext = _scriptContext;
   args._socket = socket;
   args._io = io;
-  args._messages = messages;
+  args._messages = applyInputParameters(messages, _scriptContext.in);
 
   socket.emit("server_response", `// execute: ${func.name}`);
 
@@ -229,4 +230,20 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   socket.emit("server_response", `// ${func.name}: completed in ${endTime - startTime}ms`);
   socket.emit("server_response", `${func.name} exection result:\n\n${result}`);
   socket.emit("function_completed");
+}
+
+function applyInputParameters(
+  messages: ChatCompletionMessageParam[],
+  inputParameters: Map<string, string>
+): ChatCompletionMessageParam[] {
+  return messages.map(m => {
+    if (m.role !== "user") {
+      return m;
+    }
+    let message = m.content as string;
+    inputParameters.forEach((value, key) => {
+      message = message.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    });
+    return { ...m, content: message };
+  });
 }
