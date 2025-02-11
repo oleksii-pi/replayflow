@@ -114,7 +114,8 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (lastUserMessage.startsWith("{{")) {
+    const inputParameterPattern = /{{(\w+)}}=(.+)/;
+    if (inputParameterPattern.test(lastUserMessage)) {
       // setInputParameter function
       const variableName = lastUserMessage.split("{{")[1].split("}}")[0];
       const variableValue = lastUserMessage.split("=")[1].trim();
@@ -172,12 +173,12 @@ io.on("connection", (socket) => {
 });
 
 async function convertToFunctionCalls(messages: ChatCompletionMessageParam[]) {
+  // here caching by the same last message can be implemented
   const openAIFunctions = functions.map((func) => ({
     name: func.name,
     description: func.description,
     parameters: func.parameters,
   }));
-
   
   const messageConfig: ChatCompletionCreateParamsNonStreaming = {
     model: "gpt-4o",
