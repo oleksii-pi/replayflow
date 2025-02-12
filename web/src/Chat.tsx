@@ -1,8 +1,6 @@
 // src/Chat.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
 import './github-markdown-light.css'
 
 const socket = io('http://localhost:5000');
@@ -272,9 +270,7 @@ const Chat: React.FC = () => {
             }}
             key={ind}
           >
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
               {msg.content}
-            </ReactMarkdown> 
           </div>
         ))}
         <div ref={messagesEndRef} />
