@@ -1,5 +1,4 @@
-// src/functions/analyzeScreenshotAndAct.ts
-
+// server/src/functions/analyzeScreenshotAndAct.ts
 import { AIFunctionCall } from "../domain/AICommandFunction";
 import { Page } from "playwright";
 import { simpleClaudeApi } from "../services/claudeApi";
@@ -82,8 +81,8 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
     console.log("analyzeScreenshotAndAct: " + JSON.stringify(_messages, null, 2));
     const userTask = _messages[_messages.length - 1].content as string;
     
-    async function sendResponseMessage(msg: string, debug?: boolean) {
-      _socket.emit("server_response", (debug ? "// " : "") + "analyzeScreenshotAndAct: " + msg);
+    async function sendResponseMessage(msg: string, debug: boolean = false) {
+      _socket.emit("server_response", JSON.stringify({ functionname: "analyzeScreenshotAndAct", payload: msg, debug: debug }));
     }
     async function sendScreenshot() {
       const screenshot = (await page.screenshot()).toString("base64");
@@ -107,7 +106,7 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
         await sendResponseMessage("AI returned invalid JSON: \n\n" + aiResponse, true);
         return null;
       }
-      await sendResponseMessage(aiResponse);
+      await sendResponseMessage(JSON.stringify(parsed));
       
       await page.evaluate((data: UIElement[]) => {
         data.forEach((d, index) => {

@@ -1,9 +1,9 @@
-// src/Chat.tsx
+// web/src/Chat.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import io from 'socket.io-client';
+import { socket } from './socket';
+import { eventBus } from './services/EventBus';
 import './github-markdown-light.css'
-
-const socket = io('http://localhost:5000');
+import { AIAssessment } from './domain';
 
 interface Message {
   role: "user" | "assistant";
@@ -258,6 +258,68 @@ const Chat: React.FC = () => {
 
   const displayScriptAndButtons = scriptCommands.length > 0 && scriptIndex < scriptCommands.length;
 
+  
+  const renderUIElementsAndActions = (content: string) => {
+    let aiAssessment: AIAssessment;
+    try {
+      aiAssessment = JSON.parse(JSON.parse(content).payload) as AIAssessment;
+      if (aiAssessment.reasoning == null) {
+        return content;
+      }
+    } catch (error) {
+      return content;
+    }
+    const renderActions = aiAssessment.actions.length > 0;
+    
+    return (
+      <div className="structured-assessment">
+        <div>
+          <strong>Reasoning: </strong>
+          {aiAssessment.reasoning}
+        </div>
+        <div style={{ marginTop: "10px" }}>
+          <strong>UI Elements:</strong>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {aiAssessment.uiElements.map((elem, index) => (
+              <li
+                key={index}
+                onMouseEnter={() => eventBus.emit("highlight_ui_element", elem)}
+                onMouseLeave={() => eventBus.emit("hide_ui_element")}
+                style={{
+                  cursor: "pointer",
+                  padding: "5px",
+                  borderBottom: "1px solid #ddd",
+                }}
+              >
+                <span><b>{elem.text}</b></span><span> {elem.description}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div style={{ marginTop: "10px" }}>
+            <strong>{renderActions ? "Actions:" : "No actions"}</strong>
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {aiAssessment.actions.map((action, index) => (
+                <li
+                  key={index}
+                  onMouseEnter={() => eventBus.emit("highlight_action", action)}
+                  onMouseLeave={() => eventBus.emit("hide_action")}
+                  style={{
+                    cursor: "pointer",
+                    padding: "5px",
+                    borderBottom: "1px solid #ddd",
+                  }}
+                >
+                  <span> {JSON.stringify(action.interaction, (key, value) => value === null ? undefined : value)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+      </div>
+    );
+  }
+  
+
   return (
     <div className="chat">
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
@@ -270,7 +332,7 @@ const Chat: React.FC = () => {
             }}
             key={ind}
           >
-              {msg.content}
+              {renderUIElementsAndActions(msg.content)}
           </div>
         ))}
         <div ref={messagesEndRef} />
