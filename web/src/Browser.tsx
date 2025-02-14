@@ -4,9 +4,18 @@ import { socket } from './socket';
 import { eventBus } from './services/EventBus'; // <-- Imported local event bus
 import { UIElement, Action } from './domain';
 
-
 const VIEWPORT_WIDTH = 1000; // have to be received from the server
 const VIEWPORT_HEIGHT = 800;
+
+const hashString = (str: string): string => {
+  let hash = 0;
+  if (str.length === 0) return (hash >>> 0).toString(16); 
+  for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i); 
+      hash |= 0;
+  }
+  return (hash >>> 0).toString(16);
+};
 
 const Browser: React.FC = () => {
   const [screenshot, setScreenshot] = useState('');
@@ -15,16 +24,27 @@ const Browser: React.FC = () => {
   const [highlightAction, setHighlightAction] = useState<Action | null>(null);
   
   const imgRef = useRef<HTMLImageElement>(null);
+  const screenshotDataMap = useRef(new Map<string, string>());
+  const lastScreenshotRef = useRef('');
+  const [viewingHistory, setViewingHistory] = useState(false);
 
   useEffect(() => {
     socket.on('browser_screenshot', (data: string) => {
-      setScreenshot(`data:image/png;base64,${data}`);
+      const newScreenshot = `data:image/png;base64,${data}`;
+      if (!viewingHistory) {
+        setScreenshot(newScreenshot);
+      }
+      lastScreenshotRef.current = newScreenshot;
+      const hash = hashString(data);
+      screenshotDataMap.current.set(hash, newScreenshot);
+      // --- Emit the current screenshot hash ---
+      eventBus.emit('current_screenshot_hash', hash);
     });
 
     return () => {
       socket.off('browser_screenshot');
     };
-  }, []);
+  }, [viewingHistory]);
 
   // Use the eventBus to listen for highlight events instead of socket events
   useEffect(() => {
@@ -60,6 +80,26 @@ const Browser: React.FC = () => {
     return () => {
       eventBus.off('highlight_action', handleHighlightAction);
       eventBus.off('hide_action', handleHideAction);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleDisplayHistoryScreenshot = (hash: string | null) => {
+      if (hash === undefined) {
+        setViewingHistory(true);
+        setScreenshot('');
+      } else if (hash === null) {
+        setViewingHistory(false);
+        setScreenshot(lastScreenshotRef.current);
+      } else if (screenshotDataMap.current.has(hash)) {
+        setViewingHistory(true);
+        setScreenshot(screenshotDataMap.current.get(hash)!);
+      }
+    };
+
+    eventBus.on('display_history_screenshot', handleDisplayHistoryScreenshot);
+    return () => {
+      eventBus.off('display_history_screenshot', handleDisplayHistoryScreenshot);
     };
   }, []);
 

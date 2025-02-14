@@ -8,6 +8,7 @@ import { AIAssessment } from './domain';
 interface Message {
   role: "user" | "assistant";
   content: string;
+  screenshotHash?: string;  
 }
 
 const Chat: React.FC = () => {
@@ -17,22 +18,34 @@ const Chat: React.FC = () => {
   const [scriptCommands, setScriptCommands] = useState<string[]>([]);
   const [scriptIndex, setScriptIndex] = useState(0);
   const [autoExecution, setAutoExecution] = useState(false);
-
+  
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
   const [tempInput, setTempInput] = useState<string>('');
 
   const messagesRef = useRef<Message[]>(messages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeCommandRef = useRef<HTMLLIElement>(null);
+  const currentScreenshotHashRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
   useEffect(() => {
+    const handleCurrentScreenshotHash = (hash: string) => {
+      currentScreenshotHashRef.current = hash;
+    };
+
+    eventBus.on('current_screenshot_hash', handleCurrentScreenshotHash);
+    return () => {
+      eventBus.off('current_screenshot_hash', handleCurrentScreenshotHash);
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on('server_response', (message: string) => {
       console.log('[server_response]', message);
-      const newMessage: Message = { role: 'assistant', content: message };
+      const newMessage: Message = { role: 'assistant', content: message, screenshotHash: currentScreenshotHashRef.current };
       setMessages(prev => [...prev, newMessage]);
     });
 
@@ -52,7 +65,11 @@ const Chat: React.FC = () => {
   }, []);
 
   const sendUserCommand = useCallback((command: string) => {
-    const userMessage: Message = { role: 'user', content: command };
+    const userMessage: Message = { 
+      role: 'user', 
+      content: command, 
+      screenshotHash: currentScreenshotHashRef.current 
+    };
     console.log('[user_message]', command);
 
     const allActualMessages: Message[] = [
@@ -83,11 +100,15 @@ const Chat: React.FC = () => {
     if (userCommand) {
       const commands = userCommand.split('\n').map(line => line.trim()).filter(line => line);
       if (commands.length > 1) {
-        const userMessage: Message = { role: 'user', content: "Script execution started:\n\n" + userCommand };
+        const userMessage: Message = { 
+          role: 'user', 
+          content: "Script execution started:\n\n" + userCommand, 
+          screenshotHash: currentScreenshotHashRef.current 
+        };
         setMessages(prev => [...prev, userMessage]);
         
         const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-        localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, { role: 'user', content: userCommand }]));
+        localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, { role: 'user', content: userCommand, screenshotHash: currentScreenshotHashRef.current }]));
         
         setScriptCommands(commands);
         setScriptIndex(0);
@@ -95,7 +116,6 @@ const Chat: React.FC = () => {
       } else {
         sendUserCommand(userCommand);
         setInput('');
-        // Note: sendUserCommand already calls setLoading(true)
       }
     }
   };
@@ -105,7 +125,7 @@ const Chat: React.FC = () => {
     const uniqueCommands = new Map();
     return history
       .filter((msg: Message) => msg.role === 'user')
-      .reverse() // Reverse to process from newest to oldest
+      .reverse()
       .filter((msg: Message) => {
         if (!uniqueCommands.has(msg.content)) {
           uniqueCommands.set(msg.content, true);
@@ -224,7 +244,6 @@ const Chat: React.FC = () => {
   }, [loading, autoExecution, scriptCommands, scriptIndex, sendUserCommand]);
 
   useEffect(() => {
-    // Only update the input with the next command after the current function_completed event (loading becomes false)
     if (!loading && !autoExecution && scriptCommands.length > 0) {
       if (scriptIndex < scriptCommands.length) {
         setInput(scriptCommands[scriptIndex]);
@@ -258,7 +277,6 @@ const Chat: React.FC = () => {
 
   const displayScriptAndButtons = scriptCommands.length > 0 && scriptIndex < scriptCommands.length;
 
-  
   const renderUIElementsAndActions = (content: string) => {
     let aiAssessment: AIAssessment;
     try {
@@ -319,15 +337,20 @@ const Chat: React.FC = () => {
     );
   }
   
-
   return (
     <div className="chat">
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
         {messages.map((msg, ind) => (
           <div
             className="markdown-rendered"
+            onMouseEnter={() => {
+              eventBus.emit('display_history_screenshot', msg.screenshotHash);
+            }}
+            onMouseLeave={() => {
+              eventBus.emit('display_history_screenshot', null);
+            }}
             style={{
-              marginBottom: 20,
+              paddingBottom: 20,
               background: msg.role === 'user' ? 'moccasin' : 'transparent',
             }}
             key={ind}
@@ -402,7 +425,7 @@ const Chat: React.FC = () => {
             className="markdown-rendered"
             style={{
               marginTop: '10px',
-              maxHeight: '30vh', // 30% of the page height
+              maxHeight: '30vh',
               overflowY: 'auto',
               backgroundColor: '#f8f8f8',
               padding: '10px',

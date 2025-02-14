@@ -13,8 +13,17 @@ export const visitUrl: AIFunctionCall = {
     required: ["url"],
   },
   execute: async (args: any, page: Page) => {
-    const { url } = args;
+    const { url, _io } = args;
+
+    async function sendScreenshot() {
+      const screenshot = (await page.screenshot()).toString("base64");
+      _io.emit("browser_screenshot", screenshot);
+      return screenshot;
+    }
+    
     await page.goto(url);
+    await page.waitForTimeout(500);
+    await sendScreenshot();
     return `Visited ${url}`;
   },
 };
