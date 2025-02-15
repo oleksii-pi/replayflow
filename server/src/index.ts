@@ -162,9 +162,9 @@ io.on("connection", (socket) => {
       }
 
       await sendScreenshot();
-      setTimeout(sendScreenshot, 1000);
-      setTimeout(sendScreenshot, 3000);
-      setTimeout(sendScreenshot, 11000);
+      setTimeout(sendScreenshot, 1000); // if UI rendering is slow, repeat sending screenshot in 1 second
+      // setTimeout(sendScreenshot, 3000);
+      // setTimeout(sendScreenshot, 11000);
     }
   });
 
