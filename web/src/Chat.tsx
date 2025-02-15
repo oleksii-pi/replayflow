@@ -138,19 +138,6 @@ const Chat: React.FC = () => {
       .reverse(); 
   }, []);
 
-  const handleKeyUp = (e: React.KeyboardEvent) => {
-    // Send on Enter (unless Shift+Enter is pressed)
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      setHistoryIndex(null);
-      if (scriptCommands.length > 0 && scriptIndex < scriptCommands.length) {
-        if (autoExecution) return;
-        handleNextStep();
-      } else {
-        sendMessage();
-      }
-    }
-  };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowUp' && e.shiftKey) {
@@ -184,6 +171,18 @@ const Chat: React.FC = () => {
           setHistoryIndex(null);
           setInput(tempInput);
         }
+      }
+    }
+
+    // Send on Enter (unless Shift+Enter is pressed)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      setHistoryIndex(null);
+      if (scriptCommands.length > 0 && scriptIndex < scriptCommands.length) {
+        if (autoExecution) return;
+        handleNextStep();
+      } else {
+        sendMessage();
       }
     }
   };
@@ -410,7 +409,6 @@ const Chat: React.FC = () => {
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyUp={handleKeyUp}
           onKeyDown={handleKeyDown}
           style={{
             width: '100%',
