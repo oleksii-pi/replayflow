@@ -79,10 +79,12 @@ const Chat: React.FC = () => {
 
     setMessages(allActualMessages);
 
-    const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, userMessage]));
+    const messagesWithoutScreenshotHash = allActualMessages.map(msg => ({
+      ...msg,
+      screenshotHash: undefined
+    }));
 
-    socket.emit('user_message', JSON.stringify(allActualMessages));
+    socket.emit('user_message', JSON.stringify(messagesWithoutScreenshotHash));
     
     setLoading(true);
   }, []);
