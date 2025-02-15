@@ -99,6 +99,9 @@ const Chat: React.FC = () => {
     if (loading) return; 
 
     const userCommand = input.trim();
+    const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, { role: 'user', content: userCommand, screenshotHash: currentScreenshotHashRef.current }]));
+
     if (userCommand) {
       const commands = userCommand.split('\n').map(line => line.trim()).filter(line => line);
       if (commands.length > 1) {
@@ -108,10 +111,7 @@ const Chat: React.FC = () => {
           screenshotHash: currentScreenshotHashRef.current 
         };
         setMessages(prev => [...prev, userMessage]);
-        
-        const existingHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-        localStorage.setItem('chatHistory', JSON.stringify([...existingHistory, { role: 'user', content: userCommand, screenshotHash: currentScreenshotHashRef.current }]));
-        
+                
         setScriptCommands(commands);
         setScriptIndex(0);
         setInput(''); 
@@ -138,8 +138,8 @@ const Chat: React.FC = () => {
       .reverse(); 
   }, []);
 
-  // Send on Enter (unless Shift+Enter is pressed)
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    // Send on Enter (unless Shift+Enter is pressed)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       setHistoryIndex(null);
@@ -151,7 +151,7 @@ const Chat: React.FC = () => {
       }
     }
   };
-
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowUp' && e.shiftKey) {
       const userMessages = getUniqueUserCommands();
@@ -410,7 +410,7 @@ const Chat: React.FC = () => {
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyUp={handleKeyUp}
           onKeyDown={handleKeyDown}
           style={{
             width: '100%',
