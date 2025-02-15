@@ -11,6 +11,7 @@ Explain what you see in the screenshot and how it relates to the user task.
 Provide a plan of actions to perform the user task.
 User can ask generic question, that does not require any action, so actions will be empty.
 Find the bounding box coordinates of one or more UI elements in the screenshot.
+If user mentions going to step (eg "go to step 2" (label: "2"), "goto step exit" (label: "exit"), "go to step start" (label: "start")), then add a goto action to the plan.
 Look all possible UI elements, including text, images, buttons, links, menus, icons, etc.
 Return a JSON with this structure:
 {
