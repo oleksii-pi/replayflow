@@ -13,5 +13,5 @@ socket.on('disconnect', () => {
 
 // Debug all incoming events
 socket.onAny((eventName, ...args) => {
-  console.log('Received event:', eventName, args);
+  //console.log('Received event:', eventName, args);
 }); 
