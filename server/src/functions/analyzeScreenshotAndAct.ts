@@ -1,5 +1,5 @@
 // server/src/functions/analyzeScreenshotAndAct.ts
-import { AIFunctionCall } from "../domain/AICommandFunction";
+import { AIFunctionCall } from "../domain/AIFunctionCall";
 import { Page } from "playwright";
 import { simpleClaudeApi } from "../services/claudeApi";
 import { Socket } from "socket.io";

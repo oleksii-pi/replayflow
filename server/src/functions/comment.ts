@@ -1,6 +1,6 @@
-/// src/functions/comment.ts
+// server/src/functions/comment.ts
 import { ChatCompletionMessageParam } from "openai/resources";
-import { AIFunctionCall } from "../domain/AICommandFunction";
+import { AIFunctionCall } from "../domain/AIFunctionCall";
 import { Page } from "playwright";
 
 export const comment: AIFunctionCall = {

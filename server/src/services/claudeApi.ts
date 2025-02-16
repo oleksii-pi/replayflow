@@ -1,4 +1,4 @@
-// src/services/claudeApi.ts
+// server/src/services/claudeApi.ts
 import Anthropic from "@anthropic-ai/sdk";
 import { ImageBlockParam, TextBlockParam } from "@anthropic-ai/sdk/resources";
 import { MessageCreateParamsNonStreaming } from "@anthropic-ai/sdk/resources/messages";

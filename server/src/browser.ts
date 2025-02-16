@@ -1,4 +1,4 @@
-// src/browser.ts
+// server/src/browser.ts
 import { chromium, Browser, Page } from "playwright";
 
 let _browser: Browser;

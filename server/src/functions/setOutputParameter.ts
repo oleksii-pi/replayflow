@@ -1,5 +1,5 @@
-/// src/functions/setOutputParameter.ts
-import { AIFunctionCall } from "../domain/AICommandFunction";
+// server/src/functions/setOutputParameter.ts
+import { AIFunctionCall } from "../domain/AIFunctionCall";
 import { Page } from "playwright";
 import { IScriptContext } from "../domain/IScriptContext";
 

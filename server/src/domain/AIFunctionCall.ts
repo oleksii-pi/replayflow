@@ -1,4 +1,4 @@
-// src/domain/AICommandFunction.ts
+// server/src/domain/AICommandFunction.ts
 import { Page } from "playwright";
 
 export interface AIFunctionCall {

@@ -1,5 +1,5 @@
-// src/functions/resetBrowser.ts
-import { AIFunctionCall } from "../domain/AICommandFunction";
+// server/src/functions/resetBrowser.ts
+import { AIFunctionCall } from "../domain/AIFunctionCall";
 import { Page } from "playwright";
 import { resetBrowser as reset } from "../browser";
 

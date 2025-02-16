@@ -1,4 +1,4 @@
-// src/domain/FunctionCall.ts
+// server/src/domain/FunctionCall.ts
 export interface FunctionCall {
   id: string;
   type: string;

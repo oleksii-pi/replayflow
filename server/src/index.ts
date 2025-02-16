@@ -1,4 +1,4 @@
-// src/index.ts
+// server/src/index.ts
 import express from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
@@ -9,7 +9,6 @@ import { FunctionCall } from "./domain/FunctionCall";
 import { openAIapi } from "./services/openAIapi";
 import { ChatCompletionMessageParam } from "openai/resources";
 import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/chat/completions";
-import { extractScript, Script } from "./functions/extractScript";
 import { page } from "./browser";
 import { IScriptContext } from "./domain/IScriptContext";
 
@@ -85,34 +84,7 @@ io.on("connection", (socket) => {
     );
 
     if (lastUserMessage === "script") {
-      // script function
-      const script = await extractScript(messagesWithoutScriptRequests);
-      const allScriptInputVariables = (JSON.parse(script) as Script).steps
-        .filter((m) => m.command.startsWith("{{") === true)
-        .map((m) => m.command)
-        .join("\n");
-      const allUserCommands = (JSON.parse(script) as Script).steps
-        .filter((m) => m.command.startsWith("{{") === false)
-        .map((m, i) => i + 1 + ". " + m.command)
-        .join("\n");
-      const contextBlockStart = "<details><summary>Context</summary>\n\n";
-      const contextBlockClose = "</details>";
-      const answer =
-        "script function answers:\n\n" +
-        contextBlockStart +
-        "\n```text\n" +
-        allScriptInputVariables +
-        "\n" +
-        allUserCommands +
-        "\n```\n" +
-        "```json\n" +
-        script +
-        "\n```\n" +
-        contextBlockClose;
-
-      socket.emit("server_response", answer);
-      socket.emit("function_completed");
-      return;
+      // TODO: extract script
     }
 
     const inputParameterPattern = /{{(\w+)}}=(.+)/;

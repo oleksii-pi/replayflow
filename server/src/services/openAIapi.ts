@@ -1,4 +1,4 @@
-// src/services/openAIapi.ts
+// server/src/services/openAIapi.ts
 import { OpenAI } from "openai";
 import {
   ChatCompletionContentPart,

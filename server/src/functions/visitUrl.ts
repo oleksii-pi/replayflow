@@ -1,5 +1,5 @@
-// src/functions/visitUrl.ts
-import { AIFunctionCall } from "../domain/AICommandFunction";
+// server/src/functions/visitUrl.ts
+import { AIFunctionCall } from "../domain/AIFunctionCall";
 import { Page } from "playwright";
 
 export const visitUrl: AIFunctionCall = {
