@@ -75,6 +75,11 @@ export const simpleClaudeApi = async (
       "\x1b[33m%s\x1b[0m", // Yellow color
       answer
     );
+    console.log("Claude usage:");
+    console.log(
+      "\x1b[34m%s\x1b[0m", // Blue color
+      response.usage
+    );
 
     const endTime = Date.now();
     console.log(`simpleClaudeApi execution time: ${endTime - startTime} ms`);
