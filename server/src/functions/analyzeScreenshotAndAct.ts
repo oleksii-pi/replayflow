@@ -79,7 +79,7 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
       _io: Server;
       _messages: ChatCompletionMessageParam[];
     };
-    console.log("analyzeScreenshotAndAct: " + JSON.stringify(_messages, null, 2));
+    console.log("analyzeScreenshotAndAct: _messages=\n" + JSON.stringify(_messages, null, 2));
     const userTask = _messages[_messages.length - 1].content as string;
     
     async function sendResponseMessage(msg: string, debug: boolean = false) {
@@ -108,36 +108,6 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
         return null;
       }
       await sendResponseMessage(JSON.stringify(parsed));
-      
-      // await page.evaluate((data: UIElement[]) => {
-      //   data.forEach((d, index) => {
-      //     if (!d.x1 || !d.y1 || !d.x2 || !d.y2) return;
-      //     const margin = 4;
-      //     const rect = document.createElement("div");
-      //     rect.style.position = "absolute";
-      //     rect.style.left = `${Math.min(d.x1, d.x2) - margin}px`;
-      //     rect.style.top = `${Math.min(d.y1, d.y2) - margin}px`;
-      //     rect.style.width = `${Math.abs(d.x2 - d.x1) + 2 * margin}px`;
-      //     rect.style.height = `${Math.abs(d.y2 - d.y1) + 2 * margin}px`;
-      //     rect.style.border = "2px solid red";
-      //     rect.style.pointerEvents = "none";
-      //     rect.style.zIndex = "9999";
-          
-      //     const indexLabel = document.createElement("div");
-      //     indexLabel.style.position = "absolute";
-      //     indexLabel.style.left = "50%";
-      //     indexLabel.style.top = "50%";
-      //     indexLabel.style.transform = "translate(-50%, -50%)";
-      //     indexLabel.style.color = "red";
-      //     indexLabel.style.fontSize = "16px";
-      //     indexLabel.style.fontWeight = "bold";
-      //     indexLabel.textContent = `${index}`;
-      //     rect.appendChild(indexLabel);
-
-      //     document.body.appendChild(rect);
-      //     setTimeout(() => document.body.removeChild(rect), 300);
-      //   });
-      // }, parsed.uiElements || []);
 
       await sendScreenshot();
       

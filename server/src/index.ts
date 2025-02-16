@@ -69,8 +69,9 @@ io.on("connection", (socket) => {
       JSON.parse(allMessages) as ChatCompletionMessageParam[]
     ).filter((m) => m.role !== "system");
 
-    const messagesWithoutScriptRequests = messagesFromFrontEnd.filter(
-      (m) => (m.content as string).startsWith("script") === false
+    const messagesWithoutDebug = messagesFromFrontEnd.filter(
+      (m) => (m.content as string).startsWith("script") === false 
+      && (m.content as string).startsWith("////") === false
     );
 
     const lastUserMessage = messagesFromFrontEnd[
@@ -100,7 +101,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const messages = [systemMessageItem, ...messagesWithoutScriptRequests];
+    const messages = [systemMessageItem, ...messagesWithoutDebug];
     console.log("messages:");
     console.log(
       "\x1b[32m%s\x1b[0m", // Green color
@@ -110,7 +111,7 @@ io.on("connection", (socket) => {
     const startTime = Date.now();
     const functionCalls = await convertToFunctionCalls(messages);
     const endTime = Date.now();
-    socket.emit("server_response", "// convertToFunctionCalls: completed in " + (endTime - startTime) + "ms");
+    socket.emit("server_response", "//// convertToFunctionCalls: completed in " + (endTime - startTime) + "ms");
 
     if (functionCalls.length === 0) {
       socket.emit(
@@ -194,12 +195,12 @@ async function executeCommand(functionCall: FunctionCall, messages: ChatCompleti
   args._io = io;
   args._messages = applyInputParameters(messages, _scriptContext.in);
 
-  socket.emit("server_response", `// execute: ${func.name}`);
+  socket.emit("server_response", `//// execute: ${func.name}`);
 
   const startTime = Date.now();
   const result = await func.execute(args, page());
   const endTime = Date.now();
-  socket.emit("server_response", `// ${func.name}: completed in ${endTime - startTime}ms`);
+  socket.emit("server_response", `//// ${func.name}: completed in ${endTime - startTime}ms`);
   socket.emit("server_response", `${func.name} exection result:\n\n${result}`);
   socket.emit("function_completed");
 }
