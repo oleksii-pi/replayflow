@@ -13,17 +13,13 @@ console.log("OpenAI API Key:", configuration.apiKey?.substring(0, 4) + "...");
 
 export const openAIapi = new OpenAI(configuration);
 
-interface SimpleOpenAIApiParams {
-  message: string;
-  imageBase64Array?: string[];
-  answerJson?: boolean;
-}
 
-export const simpleOpenAIApi = async ({
-  message,
-  imageBase64Array = [],
-  answerJson = false,
-}: SimpleOpenAIApiParams): Promise<string> => {
+
+export const simpleOpenAIApi = async (
+  message: string,
+  imageBase64Array: string[] = [],
+  answerJson?: boolean
+): Promise<string> => {
   console.log("simpleOpenAIApi:");
   console.log(
     "\x1b[32m%s\x1b[0m", // Green color

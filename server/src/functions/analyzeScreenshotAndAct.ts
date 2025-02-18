@@ -1,10 +1,10 @@
 // server/src/functions/analyzeScreenshotAndAct.ts
 import { AIFunctionCall } from "../domain/AIFunctionCall";
 import { Page } from "playwright";
-import { simpleClaudeApi } from "../services/claudeApi";
 import { Socket } from "socket.io";
 import { Server } from "http";
 import { ChatCompletionMessageParam } from "openai/resources";
+import { simpleOpenAIApi } from "../services/openAIapi";
 
 const analyzeImagePrompt = `
 Explain what you see in the screenshot and how it relates to the user task.
@@ -63,7 +63,7 @@ interface Action {
   interaction: Interaction;
 }
 
-interface AIAssessment {
+interface AIResponse {
   reasoning: string;
   uiElements: UIElement[];
   actions: Action[];
@@ -91,18 +91,18 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
       return screenshot;
     }
    
-    async function performReasoning(): Promise<AIAssessment | null> {
+    async function performReasoning(): Promise<AIResponse | null> {
       const screenshot = await sendScreenshot();
       const prompt = analyzeImagePrompt.replace("{{userTask}}", userTask)
 
       const startTime = Date.now();
-      const aiResponse = await simpleClaudeApi(prompt, [screenshot], true);
+      const aiResponse = await simpleOpenAIApi(prompt, [screenshot], true);
       const endTime = Date.now();
       await sendResponseMessage(`performReasoning: completed in ${endTime - startTime}ms`, true);
       
-      let parsed: AIAssessment | null = null;
+      let parsed: AIResponse | null = null;
       try {
-        parsed = JSON.parse(aiResponse) as AIAssessment;
+        parsed = JSON.parse(aiResponse) as AIResponse;
       } catch {
         await sendResponseMessage("AI returned invalid JSON: \n\n" + aiResponse, true);
         return null;
