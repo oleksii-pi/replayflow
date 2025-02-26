@@ -319,7 +319,7 @@ const Chat: React.FC = () => {
           </ul>
         </div>
         <div style={{ marginTop: "10px" }}>
-            <strong>{renderActions ? "Actions:" : "No actions"}</strong>
+            <strong>{renderActions ? "Actions:" : "No actions to perform"}</strong>
             <ul style={{ listStyle: "none", padding: 0 }}>
               {aiAssessment.actions.map((action, index) => (
                 <li
