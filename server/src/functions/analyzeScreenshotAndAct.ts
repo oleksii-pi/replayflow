@@ -4,7 +4,7 @@ import { Page } from "playwright";
 import { Socket } from "socket.io";
 import { Server } from "http";
 import { ChatCompletionMessageParam } from "openai/resources";
-import { simpleOpenAIApi } from "../services/openAIapi";
+import { simpleClaudeApi } from "../services/claudeApi";
 
 const analyzeImagePrompt = `
 Explain what you see in the screenshot and how it relates to the user task.
@@ -96,7 +96,7 @@ export const analyzeScreenshotAndAct: AIFunctionCall = {
       const prompt = analyzeImagePrompt.replace("{{userTask}}", userTask)
 
       const startTime = Date.now();
-      const aiResponse = await simpleOpenAIApi(prompt, [screenshot], true);
+      const aiResponse = await simpleClaudeApi(prompt, [screenshot], true);
       const endTime = Date.now();
       await sendResponseMessage(`performReasoning: completed in ${endTime - startTime}ms`, true);
       

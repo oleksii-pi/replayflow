@@ -5,7 +5,7 @@ import { eventBus } from './services/EventBus'; // <-- Imported local event bus
 import { UIElement, Action } from './domain';
 
 const VIEWPORT_WIDTH = 1000; // have to be received from the server
-const VIEWPORT_HEIGHT = 800;
+const VIEWPORT_HEIGHT = 600;
 
 const hashString = (str: string): string => {
   let hash = 0;

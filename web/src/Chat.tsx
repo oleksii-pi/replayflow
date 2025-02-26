@@ -437,7 +437,7 @@ const Chat: React.FC = () => {
                 <li 
                   key={i} 
                   ref={i === scriptIndex ? activeCommandRef : null}
-                  style={{ fontWeight: i === scriptIndex - 1 ? 'bold' : 'normal' }}
+                  style={{ fontWeight: (!loading && i === scriptIndex) || (loading && i === scriptIndex - 1) ? 'bold' : 'normal' }}
                 >
                   {i === scriptIndex ? (input || command) : command}
                 </li>
