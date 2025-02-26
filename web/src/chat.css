@@ -1,13 +1,18 @@
 /* styles/github-markdown-light.css */
-.markdown-rendered {
+.chat-message {
   max-height: 100%;
   overflow: auto;
 }
 
-.markdown-rendered {
+.chat-message pre {
+  margin: 0;
+}
+
+.chat-message {
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   margin: 0;
+  border-bottom: 1px solid #ccc;
   color: #1f2328;
   background-color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",

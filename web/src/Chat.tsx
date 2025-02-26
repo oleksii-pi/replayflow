@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { socket } from './socket';
 import { eventBus } from './services/EventBus';
-import './github-markdown-light.css'
+import './chat.css'
 import { AIAssessment } from './domain';
 
 interface Message {
@@ -343,7 +343,7 @@ const Chat: React.FC = () => {
       <div className="messages" style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
         {messages.map((msg, ind) => (
           <div
-            className="markdown-rendered"
+            className="chat-message"
             onMouseEnter={() => {
               eventBus.emit('display_history_screenshot', msg.screenshotHash);
             }}
@@ -351,12 +351,11 @@ const Chat: React.FC = () => {
               eventBus.emit('display_history_screenshot', null);
             }}
             style={{
-              paddingBottom: 20,
               background: msg.role === 'user' ? 'moccasin' : 'transparent',
             }}
             key={ind}
           >
-              {renderUIElementsAndActions(msg.content)}
+              {msg.role === 'user' ? <pre>{msg.content}</pre> : renderUIElementsAndActions(msg.content)}
           </div>
         ))}
         <div ref={messagesEndRef} />
