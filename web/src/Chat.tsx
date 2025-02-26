@@ -286,6 +286,9 @@ const Chat: React.FC = () => {
         return content;
       }
     } catch (error) {
+      if (content.startsWith('Script execution started')) {
+        return <pre>{content}</pre>;
+      }
       return content;
     }
     const renderActions = aiAssessment.actions.length > 0;
@@ -355,7 +358,7 @@ const Chat: React.FC = () => {
             }}
             key={ind}
           >
-              {msg.role === 'user' ? <pre>{msg.content}</pre> : renderUIElementsAndActions(msg.content)}
+              {renderUIElementsAndActions(msg.content)}
           </div>
         ))}
         <div ref={messagesEndRef} />
